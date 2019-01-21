@@ -29,8 +29,8 @@ def create_unnamed_feature(train, test):
     return train, test
 
 def drop_na_values(train, test):
-    train.dropna(axis=0, how="any", inplace=True)
-    test.dropna(axis=0, how="any", inplace=True)
+    train = train.dropna()
+    test = test.dropna()
     return train, test
 
 def create_mixed_breed_feature(train, test):
@@ -66,12 +66,12 @@ def map_dictionary_to_breed_names(breed_dict, train, test):
     test.loc[test["BreedName_1"] == "Domestic Medium Hair", "MixedBreed"] = 1
     test.loc[test["BreedName_1"] == "Domestic Long Hair", "MixedBreed"] = 1
 
-    return test, train
+    return train, test
 
 def create_description_length_feature(train, test):
     train["Description"] = train["Description"].fillna("")
-    train["desc_length"] = train["Description"].apply(lambda x: len(x))
-    train["desc_words"] = train["Description"].apply(lambda x: len(x.split()))
+    train["Description_Character_Count"] = train["Description"].apply(lambda x: len(x))
+    train["Description_Word_Count"] = train["Description"].apply(lambda x: len(x.split()))
 
     test["Description"] = test["Description"].fillna("")
     test["Description_Character_Count"] = test["Description"].apply(lambda x: len(x))
@@ -86,18 +86,30 @@ def save_processed_data(train, test, path):
 def process_data():
     print("\nReading in the data")
     train, test, breeds, colours = read_in_data("data/")
+
+    print(train["AdoptionSpeed"].count())
     print("\nStandardise pets with no names")
     train, test = standardise_unnamed_pets(train, test)
+
+    print(train["AdoptionSpeed"].count())
     train, test = create_unnamed_feature(train, test)
     print("\nDropping NA values")
+
+    print(train["AdoptionSpeed"].count())
     train, test = drop_na_values(train, test)
     print("\nCreating mixed breed feature")
+
+    print(train["AdoptionSpeed"].count())
     train, test = create_mixed_breed_feature(train, test)
     breed_dict = breed_df_to_dict(breeds)
-    test, train = map_dictionary_to_breed_names(breed_dict, train, test)
+    train, test = map_dictionary_to_breed_names(breed_dict, train, test)
+
+    print(train["AdoptionSpeed"].count())
     print("\nMapping breed dictionary to data")
-    test, train = create_description_length_feature(train, test)
+    train, test = create_description_length_feature(train, test)
     print("\nCreated description length feature")
+
+    print(train["AdoptionSpeed"].count())
     print("\nSaving data")
     save_processed_data(train, test, "data/processed/")
     print("\nData saved")
