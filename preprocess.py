@@ -3,7 +3,11 @@ import numpy as np
 
 def read_in_data(path):
     train = pd.read_csv(path + "train/train.csv")
+
     test = pd.read_csv(path + "test/test.csv")
+    submission = pd.read_csv(path + "/test/sample_submission.csv")
+    test = pd.merge(test, submission, on="PetID")
+
     breeds = pd.read_csv(path + "breed_labels.csv")
     colours = pd.read_csv(path + "color_labels.csv")
     return train, test, breeds, colours
