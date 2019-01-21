@@ -1,4 +1,6 @@
 import pandas as pd
+import wordcloud
+
 
 train = pd.read_csv("data/train/train.csv")
 
