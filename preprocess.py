@@ -68,25 +68,37 @@ def map_dictionary_to_breed_names(breed_dict, train, test):
 
     return test, train
 
+def create_description_length_feature(train, test):
+    train["Description"] = train["Description"].fillna("")
+    train["desc_length"] = train["Description"].apply(lambda x: len(x))
+    train["desc_words"] = train["Description"].apply(lambda x: len(x.split()))
+
+    test["Description"] = test["Description"].fillna("")
+    test["Description_Character_Count"] = test["Description"].apply(lambda x: len(x))
+    test["Description_Word_Count"] = test["Description"].apply(lambda x: len(x.split()))
+    return train, test
+
 def save_processed_data(train, test, path):
     train.to_csv(path + "train/train.csv", index = False)
     test.to_csv(path + "test/test.csv", index = False)
     return
 
 def process_data():
-    print("\nReading in the data ...")
+    print("\nReading in the data")
     train, test, breeds, colours = read_in_data("data/")
-    print("\nData read in")
+    print("\nStandardise pets with no names")
     train, test = standardise_unnamed_pets(train, test)
-    print("\nPets with no names standardised")
     train, test = create_unnamed_feature(train, test)
+    print("\nDropping NA values")
     train, test = drop_na_values(train, test)
-    print("\nDrop NA values")
+    print("\nCreating mixed breed feature")
     train, test = create_mixed_breed_feature(train, test)
     breed_dict = breed_df_to_dict(breeds)
     test, train = map_dictionary_to_breed_names(breed_dict, train, test)
-    print("\nMapping breed dictionary to data ...")
-    print("\nSaving data...")
+    print("\nMapping breed dictionary to data")
+    test, train = create_description_length_feature(train, test)
+    print("\nCreated description length feature")
+    print("\nSaving data")
     save_processed_data(train, test, "data/processed/")
     print("\nData saved")
     return
