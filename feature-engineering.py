@@ -97,7 +97,6 @@ def save_processed_data(train, test, path):
     test.to_csv(path + "test/test.csv", index = False)
     return
 
-
 def engineer_features():
     train = pd.read_csv("data/pre-processed/train/train.csv", index_col=0)
     test = pd.read_csv("data/pre-processed/test/test.csv", index_col=0)
@@ -114,10 +113,19 @@ def engineer_features():
     train = bucket_fees(train)
     test = bucket_fees(test)
 
+    train = pd.get_dummies(train, columns = ["Gender", "MaturitySize", "FurLength", "Vaccinated", "Dewormed", "Sterilized", "Health"])
+    test = pd.get_dummies(test,
+                           columns=["Gender", "MaturitySize", "FurLength", "Vaccinated", "Dewormed", "Sterilized",
+                                    "Health"])
 
     print("\nSaving data")
     save_processed_data(train, test, "data/processed/")
     print("\nData saved")
     return
 
+
+
+
 engineer_features()
+
+# TODO: Maturity Size, fur length, vaccinations and health
