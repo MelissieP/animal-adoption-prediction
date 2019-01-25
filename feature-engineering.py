@@ -123,9 +123,4 @@ def engineer_features():
     print("\nData saved")
     return
 
-
-
-
 engineer_features()
-
-# TODO: Maturity Size, fur length, vaccinations and health

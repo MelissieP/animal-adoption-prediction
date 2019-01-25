@@ -183,3 +183,9 @@ fabric.properties
 
 #Data Folder
 data
+
+#Tensorboard
+tf_log_dir
+
+#Input file
+input
