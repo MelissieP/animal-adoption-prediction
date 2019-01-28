@@ -2,19 +2,10 @@ import pandas as pd
 import numpy as np
 import warnings
 warnings.filterwarnings('ignore')
-import numpy as np
-import pandas as pd
 from sklearn.preprocessing import LabelEncoder
-from tensorflow import keras
-from keras.models import Sequential
-from keras.layers import Dense, Activation, BatchNormalization
-from keras import utils
+from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
-from keras.layers import Dropout
-from keras.callbacks import LearningRateScheduler, Callback
-from sklearn.metrics import cohen_kappa_score
-from scipy import floor, power, exp
-from keras.optimizers import SGD, Adam
+from sklearn.metrics import accuracy_score
 
 def read_in_data():
     train = pd.read_csv("input/train.csv")
@@ -196,113 +187,11 @@ data = pd.get_dummies(train, columns = ["Type", "Gender", "MaturitySize", "FurLe
 
 X_train, X_test, Y_train, Y_test = train_test_split(data, y, test_size=0.33, random_state=1)
 
-#  Separate target variable from training set, and remove unnecessary columns
-encoder = LabelEncoder()
-encoder.fit(Y_train)
-y_train = encoder.transform(Y_train)
-y_test = encoder.transform(Y_test)
-
-num_classes = np.max(y_train) + 1
-y_train = utils.to_categorical(y_train, num_classes)
-y_test = utils.to_categorical(y_test, num_classes)
-
-batch_size = 128
-epochs = 500
-
-# Build the model
-model = Sequential()
-model.add(Dense(388, input_shape=(388,)))
-model.add(BatchNormalization())
-model.add(Activation('selu'))
-#model.add(Dropout(0.2))
-
-model.add(Dense(350))
-model.add(BatchNormalization())
-model.add(Activation('selu'))
-#model.add(Dropout(0.2))
-
-model.add(Dense(300))
-model.add(BatchNormalization())
-model.add(Activation('selu'))
-#model.add(Dropout(0.2))
-
-model.add(Dense(250))
-model.add(BatchNormalization())
-model.add(Activation('selu'))
-#model.add(Dropout(0.2))
-
-model.add(Dense(200))
-model.add(BatchNormalization())
-model.add(Activation('selu'))
-#model.add(Dropout(0.2))
-
-model.add(Dense(100))
-model.add(BatchNormalization())
-model.add(Activation('selu'))
-#model.add(Dropout(0.2))
-
-model.add(Dense(50))
-model.add(BatchNormalization())
-model.add(Activation('selu'))
-#model.add(Dropout(0.2))
-
-model.add(Dense(20))
-model.add(BatchNormalization())
-#model.add(Activation('selu'))
-
-model.add(Dense(num_classes))
-model.add(BatchNormalization())
-model.add(Activation('softmax'))
-
-# drop = 0.5
-# epochs_drop = 1.0
-# initial_lrate = 0.1
-#
-# learning_rate = 0.1
-# decay_rate = learning_rate / epochs
-momentum = 0.8
-sgd = Adam(lr=0.0, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
-
-def exp_decay(epoch):
-   initial_lrate = 0.01
-   k = 0.1
-   lrate = initial_lrate * exp(-k*epoch)
-   return lrate
-lrate = LearningRateScheduler(exp_decay)
-
-
-class LossHistory(Callback):
-    def on_train_begin(self, logs={}):
-        self.losses = []
-        self.lr = []
-
-    def on_epoch_end(self, batch, logs={}):
-        self.losses.append(logs.get("loss"))
-        self.lr.append(exp_decay(len(self.losses)))
-
-loss_history = LossHistory()
-lrate = LearningRateScheduler(exp_decay)
-callbacks_list = [loss_history, lrate]
-
-
-model.compile(loss='categorical_crossentropy',
-              optimizer="rmsprop",
-              metrics=['categorical_accuracy'])
-
-history = model.fit(X_train, y_train,
-                    batch_size=batch_size,
-                    epochs=epochs,
-                    verbose=2,
-                    validation_split = 0.3,
-                    callbacks=callbacks_list)
-
-score = model.evaluate(X_test, y_test,
-                       batch_size=batch_size, verbose=1)
-
-print('Test accuracy:', score[1] * 100)
-
-# pred = model.predict(X_test, batch_size=batch_size, verbose=1)
-
-# kappa = cohen_kappa_score(y_test, pred)
-#
-# print(kappa)
+model = XGBClassifier()
+model.fit(X_train, Y_train)
+# make predictions for test data
+y_pred = model.predict(X_test)
+predictions = [round(value) for value in y_pred]
+# evaluate predictions
+accuracy = accuracy_score(Y_test, predictions)
+print("Accuracy: %.2f%%" % (accuracy * 100.0))
