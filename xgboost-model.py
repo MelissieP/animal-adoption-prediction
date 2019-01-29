@@ -1,11 +1,14 @@
-import pandas as pd
-import numpy as np
 import warnings
 warnings.filterwarnings('ignore')
-from sklearn.preprocessing import LabelEncoder
+import numpy as np
+import pandas as pd
+from datetime import datetime
+from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
+from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import StratifiedKFold
 from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import label_binarize
 
 def read_in_data():
     train = pd.read_csv("input/train.csv")
@@ -185,13 +188,36 @@ data = pd.get_dummies(train, columns = ["Type", "Gender", "MaturitySize", "FurLe
                                          "Vaccinated", "Dewormed", "Sterilized",
                                          "Health", 'Breed1', 'Breed2', 'Color1', 'Color2', 'Color3', 'Quantity'])
 
-X_train, X_test, Y_train, Y_test = train_test_split(data, y, test_size=0.33, random_state=1)
+X_train, X_test, Y_train, Y_test = train_test_split(data, y, test_size=0.2, random_state=1)
 
-model = XGBClassifier()
-model.fit(X_train, Y_train)
-# make predictions for test data
-y_pred = model.predict(X_test)
-predictions = [round(value) for value in y_pred]
-# evaluate predictions
-accuracy = accuracy_score(Y_test, predictions)
-print("Accuracy: %.2f%%" % (accuracy * 100.0))
+# A parameter grid for XGBoost
+params = {
+        'min_child_weight': [1, 5, 10],
+        'gamma': [0.5, 1, 1.5, 2, 5],
+        'subsample': [0.6, 0.8, 1.0],
+        'colsample_bytree': [0.6, 0.8, 1.0],
+        'max_depth': [5, 10, 15],
+        'n_estimators':[50, 200, 500]
+        }
+
+xgb = XGBClassifier(learning_rate=0.02, objective='multi:softmax',
+                    silent=True, nthread=1, num_class = 5)
+
+folds = 3
+param_comb = 5
+
+skf = StratifiedKFold(n_splits=folds, shuffle = True, random_state = 1001)
+
+random_search = RandomizedSearchCV(xgb, param_distributions=params, n_iter=param_comb, scoring=['f1_macro','precision_macro'], cv=skf.split(X_train,Y_train),
+                                   refit='f1_macro', verbose=3, random_state=1001 )
+
+random_search.fit(X_train, Y_train)
+
+print('\n All results:')
+print(random_search.cv_results_)
+print('\n Best estimator:')
+print(random_search.best_estimator_)
+print('\n Best normalized gini score for %d-fold search with %d parameter combinations:' % (folds, param_comb))
+print(random_search.best_score_ * 2 - 1)
+print('\n Best hyperparameters:')
+print(random_search.best_params_)
