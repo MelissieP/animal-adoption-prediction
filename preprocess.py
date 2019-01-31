@@ -246,7 +246,7 @@ def process_data():
         columns=["PetID", "Name", "State", "RescuerID", "Description", "BreedName_1", "BreedName_2",
                  "Fee", "Description_Character_Count", "Description_Word_Count", "Age"])
 
-    data.to_csv("data/processed/data.csv")
+    data.to_csv("data/processed/data.csv", index = False)
 
     return
 

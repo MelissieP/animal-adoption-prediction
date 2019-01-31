@@ -89,3 +89,18 @@ def build_model(X_train, X_test, y_train, y_test, num_classes):
 
 X_train, X_test, y_train, y_test, num_classes = process_data_for_model()
 test_accuracy = build_model(X_train, X_test, y_train, y_test, num_classes)
+
+pred = (model.predict(X_test) > 0.5).astype(int)
+pred = pd.DataFrame(pred, columns=["Zero", "One", "Two", "Three", "Four"])
+pred["AdoptionRate"] = 0
+pred.loc[pred["Zero"] == 1, "AdoptionRate"] = 0
+pred.loc[pred["One"] == 1, "AdoptionRate"] = 1
+pred.loc[pred["Two"] == 1, "AdoptionRate"] = 2
+pred.loc[pred["Three"] == 1, "AdoptionRate"] = 3
+pred.loc[pred["Four"] == 1, "AdoptionRate"] = 4
+
+submission_data = pd.read_csv("../input/test/sample_submission.csv")
+submission_data["AdoptionSpeed"] = pred["AdoptionRate"].astype("int32")
+submission_data["AdoptionSpeed"] = submission_data["AdoptionSpeed"].fillna(0)
+submission_data["AdoptionSpeed"] = submission_data["AdoptionSpeed"].astype("int32")
+submission_data.to_csv('submission.csv', index=False)
