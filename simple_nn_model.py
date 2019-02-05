@@ -45,24 +45,24 @@ learning_rate = 0.0001
 # Build the model
 model = Sequential()
 model.add(Dense(512, input_shape=(43,)))
-model.add(Activation('relu'))
+model.add(Activation("relu"))
 model.add(Dense(300))
-model.add(Activation('relu'))
+model.add(Activation("relu"))
 model.add(Dense(200))
-model.add(Activation('relu'))
+model.add(Activation("relu"))
 model.add(Dense(100))
-model.add(Activation('relu'))
+model.add(Activation("relu"))
 model.add(Dense(50))
-model.add(Activation('relu'))
+model.add(Activation("relu"))
 model.add(Dense(20))
-model.add(Activation('relu'))
+model.add(Activation("relu"))
 model.add(Dense(num_classes))
-model.add(Activation('softmax'))
+model.add(Activation("softmax"))
 
 # optimizer = keras.optimizers.RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0)
-model.compile(loss='categorical_crossentropy',
+model.compile(loss="categorical_crossentropy",
               optimizer="rmsprop",
-              metrics=['accuracy'])
+              metrics=["accuracy"])
 
 callbacks = [
     keras.callbacks.TensorBoard(

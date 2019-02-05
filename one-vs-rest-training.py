@@ -1,9 +1,8 @@
 import warnings
 warnings.filterwarnings('ignore')
 import pandas as pd
-from sklearn.metrics import accuracy_score
-from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
+from xgboost import XGBClassifier
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.metrics import cohen_kappa_score
 

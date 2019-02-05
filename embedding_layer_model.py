@@ -26,7 +26,7 @@ y_test = utils.to_categorical(y_test, num_classes)
 
 # Get the columns that won't be embedded. These will be passed through its own layer
 data_train = X_train[["Type_1", "Type_2", "Age", "Sentiment_Score", "Sentiment_Magnitude", "Photo_Score", "MixedBreed", "Unnamed"]]
-X_test = X_test[["Type_1", "Type_2", "Age", "Sentiment_Score", "Sentiment_Magnitude", "Photo_Score", "MixedBreed", "Unnamed"]]
+data_test = X_test[["Type_1", "Type_2", "Age", "Sentiment_Score", "Sentiment_Magnitude", "Photo_Score", "MixedBreed", "Unnamed"]]
 
 data_input = Input(shape=(8,), name = "data_train")
 data_layer = Dense(16,activation = "relu", input_shape=(8,))(data_input)
@@ -76,7 +76,7 @@ size_embedded = Embedding(X_train["MaturitySize"].max()+1, embedding_size,
 fur_embedded = Embedding(X_train["FurLength"].max()+1, embedding_size,
                                        input_length=1, name='fur_embedding')(fur_length_input)
 
-# Concatenate the embeddings and remove the extra dimension with Flatte()
+# Concatenate the embeddings and remove the extra dimension with Flatten()
 concatenated = concatenate([colour1_embedded, colour2_embedded, colour3_embedded,
                             breed1_embedded, breed2_embedded, gender_embedded,
                               vaccinate_embedded, deworm_embedded, sterilised_embedded,
@@ -107,14 +107,14 @@ model.compile(loss="categorical_crossentropy",
 history = model.fit([X_train["Color1"], X_train["Color2"], X_train["Color3"], X_train["Breed1"], X_train["Breed2"],
                      X_train["Gender"], X_train["Vaccinated"], X_train["Dewormed"],
                      X_train["Sterilized"], X_train["Health"], X_train["MaturitySize"], X_train["FurLength"], data_train],
-                    y_train, batch_size=10,
-                    epochs=280,
+                    y_train, batch_size=1000,
+                    epochs=50,
                     verbose=1,
                     validation_split=.5)
 
 # Evaluating the model
 score = model.evaluate([X_test["Color1"], X_test["Color2"], X_test["Color3"], X_test["Breed1"], X_test["Breed2"],
                         X_test["Gender"], X_test["Vaccinated"], X_test["Dewormed"],
-                        X_test["Sterilized"], X_test["Health"], X_test["MaturitySize"], X_test["FurLength"], X_test], y_test,
-                        batch_size=500, verbose=1)
+                        X_test["Sterilized"], X_test["Health"], X_test["MaturitySize"], X_test["FurLength"], data_test], y_test,
+                        batch_size=1000, verbose=1)
 print('Test accuracy:', score[1] * 100)

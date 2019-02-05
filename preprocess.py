@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import json
-import os
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -81,7 +80,6 @@ def create_description_length_feature(train, test):
     test["Description_Character_Count"] = test["Description"].apply(lambda x: len(x))
     test["Description_Word_Count"] = test["Description"].apply(lambda x: len(x.split()))
     return train, test
-
 
 def create_character_quantile_columns(df):
     character_25 = df["Description_Character_Count"].quantile(q=0.25)
@@ -184,7 +182,7 @@ def get_sentiment_score(x):
 
     while i == 1:
         try:
-            json_file = "C:/Users/melissa.pistorius/Desktop/Projects/AdoptionPrediction/animal-adoption-prediction/data/train_sentiment/" + pet_id + '.json'
+            json_file = "data/train_sentiment/" + pet_id + '.json'
             with open(json_file) as f:
                 sentiment = json.load(f)
                 score = sentiment["documentSentiment"]["score"]
@@ -201,7 +199,7 @@ def get_sentiment_magnitude(x):
 
     while i == 1:
         try:
-            json_file = "C:/Users/melissa.pistorius/Desktop/Projects/AdoptionPrediction/animal-adoption-prediction/data/train_sentiment/" + pet_id + '.json'
+            json_file = "data/train_sentiment/" + pet_id + '.json'
             with open(json_file) as f:
                 sentiment = json.load(f)
                 magnitude = sentiment["documentSentiment"]["magnitude"]
@@ -227,8 +225,8 @@ def process_data():
     test = create_word_quantile_columns(test)
     train = bucket_ages(train)
     test = bucket_ages(test)
-    # train = bucket_fees(train)
-    # test = bucket_fees(test)
+    train = bucket_fees(train)
+    test = bucket_fees(test)
 
     train['Photo_Score'] = train["PetID"].apply(lambda x: get_photo_score(x))
     data = train.loc[train["Photo_Score"] >= 0]
@@ -245,8 +243,7 @@ def process_data():
                                              # "Health", "FurLength",])
     data = data.drop(
          columns=["PetID", "Name", "State", "RescuerID", "Description", "BreedName_1", "BreedName_2",
-                  "Fee", "Description_Character_Count", "Description_Word_Count"])
-    # "Age",  'Breed1', 'Breed2',  'Color1', 'Color2', 'Color3', 'Quantity'])
+                  "Fee", "Description_Character_Count", "Description_Word_Count", "Age",  'Breed1', 'Breed2',  'Color1', 'Color2', 'Color3', 'Quantity'])
 
     data.to_csv("data/processed/embedding_data.csv", index = False)
 
