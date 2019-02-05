@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import json
 import os
+import warnings
+warnings.filterwarnings('ignore')
 
 def read_in_data():
     train = pd.read_csv("data/train/train.csv")
@@ -170,7 +172,7 @@ def get_photo_score(x):
                 else:
                     score = label['score']
         except:
-            return -1
+            return 0
         i += i
 
         return score
@@ -187,7 +189,7 @@ def get_sentiment_score(x):
                 sentiment = json.load(f)
                 score = sentiment["documentSentiment"]["score"]
         except:
-            return -2
+            return 0
         i += i
 
         return score
@@ -204,7 +206,7 @@ def get_sentiment_magnitude(x):
                 sentiment = json.load(f)
                 magnitude = sentiment["documentSentiment"]["magnitude"]
         except:
-            return -2
+            return 0
         i += i
 
         return magnitude
@@ -225,28 +227,28 @@ def process_data():
     test = create_word_quantile_columns(test)
     train = bucket_ages(train)
     test = bucket_ages(test)
-    train = bucket_fees(train)
-    test = bucket_fees(test)
+    # train = bucket_fees(train)
+    # test = bucket_fees(test)
 
     train['Photo_Score'] = train["PetID"].apply(lambda x: get_photo_score(x))
     data = train.loc[train["Photo_Score"] >= 0]
 
     data['Sentiment_Score'] = data["PetID"].apply(lambda x: get_sentiment_score(x))
-    data = data.loc[data["Sentiment_Score"] >= -1]
+    data = data.loc[data["Sentiment_Score"] >= 0]
 
     data['Sentiment_Magnitude'] = data["PetID"].apply(lambda x: get_sentiment_magnitude(x))
     data = data.loc[data["Sentiment_Score"] >= 0]
 
-    data = data.loc[(data["Sentiment_Score"] <= 1) & (data["Sentiment_Score"] > -2)]
+    data = data.loc[data["Sentiment_Score"] >= 0]
 
-    data = pd.get_dummies(data, columns = ["Gender", "MaturitySize",
-                                             "Vaccinated", "Dewormed", "Sterilized",
-                                             "Health", 'Quantity','Color1', 'Color2', 'Color3', "FurLength", 'Breed1', 'Breed2'])
+    data = pd.get_dummies(data, columns = ["Type"])#"Gender", "Vaccinated", "Dewormed", "Sterilized",
+                                             # "Health", "FurLength",])
     data = data.drop(
-        columns=["PetID", "Name", "State", "RescuerID", "Description", "BreedName_1", "BreedName_2",
-                 "Fee", "Description_Character_Count", "Description_Word_Count", "Age"])
+         columns=["PetID", "Name", "State", "RescuerID", "Description", "BreedName_1", "BreedName_2",
+                  "Fee", "Description_Character_Count", "Description_Word_Count"])
+    # "Age",  'Breed1', 'Breed2',  'Color1', 'Color2', 'Color3', 'Quantity'])
 
-    data.to_csv("data/processed/data.csv", index = False)
+    data.to_csv("data/processed/embedding_data.csv", index = False)
 
     return
 
